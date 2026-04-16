@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Multi-Robot Control Center | 10 Robots with Sync Dance!</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f4f8;
+            margin: 0;
+            padding: 20px;
+            color: #1e2a3e;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 2rem;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .sub {
+            text-align: center;
+            color: #2c3e66;
+            margin-bottom: 25px;
+            font-weight: 500;
+            border-bottom: 1px solid #ccc;
+            display: inline-block;
+            width: auto;
+            margin-left: auto;
+            margin-right: auto;
+            padding-bottom: 5px;
+        }
+
+        /* robot grid */
+        .robot-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+            max-width: 1400px;
+            margin: 0 auto 30px auto;
+        }
+
+        /* robot card */
+        .robot-card {
+            background: white;
+            border-radius: 28px;
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+            padding: 18px 12px 20px 12px;
+            transition: all 0.2s ease;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            position: relative;
+        }
+
+        .robot-card.selected {
+            background: #eef5ff;
+            border: 2px solid #2a6df4;
+            box-shadow: 0 12px 28px rgba(42, 109, 244, 0.25);
+        }
+
+        /* Dancing animation */
+        .robot-card.dancing {
+            animation: danceShake 0.3s ease-in-out infinite;
+            background: linear-gradient(135deg, #ffe6f0, #fff0e6);
+        }
+
+        @keyframes danceShake {
+            0%, 100% { transform: translateX(0) rotate(0deg); }
+            25% { transform: translateX(-3px) rotate(-1deg); }
+            75% { transform: translateX(3px) rotate(1deg); }
+        }
+
+        .robot-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 8px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .robot-name {
+            font-weight: 800;
+            font-size: 1.35rem;
+            background: #1e293b;
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 40px;
+            color: white;
+            letter-spacing: 0.5px;
+        }
+
+        .robot-status {
+            font-size: 0.75rem;
+            background: #e9ecef;
+            padding: 4px 10px;
+            border-radius: 30px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .status-led {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 10px;
+            background-color: #2ecc71;
+            margin-right: 6px;
+            box-shadow: 0 0 2px green;
+        }
+
+        .speed-preview {
+            font-size: 0.8rem;
+            text-align: center;
+            background: #f1f5f9;
+            margin: 10px 0;
+            padding: 6px;
+            border-radius: 60px;
+            font-weight: 600;
+        }
+
+        /* d-pad style */
+        .dpad {
+            display: flex;
+            justify-content: center;
+            margin: 12px 0;
+        }
+
+        .dpad table {
+            margin: 0 auto;
+            border-collapse: collapse;
+        }
+
+        .dpad button {
+            width: 58px;
+            height: 58px;
+            font-size: 28px;
+            font-weight: bold;
+            background: #f8fafc;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: 0.1s linear;
+            box-shadow: 0 3px 5px rgba(0,0,0,0.05);
+            color: #1e293b;
+        }
+
+        .dpad button:active {
+            transform: scale(0.94);
+            background: #e2e8f0;
+        }
+
+        .dpad button:hover {
+            background: #eef2ff;
+            border-color: #3b82f6;
+        }
+
+        /* speed slider row */
+        .speed-control {
+            margin-top: 18px;
+            padding-top: 8px;
+            border-top: 1px solid #e2edf2;
+        }
+
+        .speed-control input {
+            width: 100%;
+            margin: 8px 0;
+        }
+
+        .speed-value {
+            font-weight: 700;
+            background: #0f172a;
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 24px;
+            color: white;
+            font-size: 0.8rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            justify-content: center;
+        }
+
+        .action-buttons button {
+            background: #334155;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 40px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.7rem;
+            transition: 0.1s;
+        }
+
+        .action-buttons button:active {
+            transform: scale(0.95);
+        }
+
+        .select-btn {
+            background: #2563eb;
+        }
+
+        .stop-btn {
+            background: #dc2626;
+        }
+
+        .global-panel {
+            background: white;
+            border-radius: 40px;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 16px 24px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 18px;
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.05);
+            border: 1px solid #dce5f0;
+        }
+
+        .global-commands {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .global-commands button {
+            background: #2c3e66;
+            border: none;
+            padding: 8px 22px;
+            border-radius: 60px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: 0.1s;
+        }
+
+        .global-commands button:active {
+            transform: scale(0.96);
+        }
+
+        /* Special dance button style */
+        .dance-btn {
+            background: linear-gradient(135deg, #e74c3c, #c0392b) !important;
+            font-size: 1rem !important;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7); }
+            50% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(231, 76, 60, 0); }
+        }
+
+        .selected-info {
+            background: #eef2ff;
+            padding: 5px 16px;
+            border-radius: 40px;
+            font-weight: 600;
+        }
+
+        footer {
+            text-align: center;
+            font-size: 0.75rem;
+            margin-top: 30px;
+            color: #4b5563;
+        }
+
+        /* Command feedback popup */
+        .command-feedback {
+            position: absolute;
+            background: rgba(0,0,0,0.85);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+            z-index: 100;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+
+        @media (max-width: 700px) {
+            .robot-grid {
+                grid-template-columns: 1fr;
+            }
+            .dpad button {
+                width: 48px;
+                height: 48px;
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<h1>🤖 MULTI-ROBOT COMMAND CENTER</h1>
+<div style="text-align: center;">
+    <div class="sub">⚡ 10 independent robots | select any robot | 🎵 SYNC DANCE MODE!</div>
+</div>
+
+<!-- GLOBAL ACTION BAR with DANCE BUTTON added -->
+<div class="global-panel">
+    <div class="selected-info">
+        🎯 Selected: <span id="selectedRobotId">None</span>
+    </div>
+    <div class="global-commands">
+        <button id="danceButton" class="dance-btn">💃🕺 SYNC DANCE! 🎵</button>
+        <button id="globalStopAll">🛑 STOP ALL ROBOTS</button>
+        <button id="globalForwardAll">⬆️ Forward All</button>
+        <button id="globalBackAll">⬇️ Back All</button>
+        <button id="globalLeftAll">⬅️ Left All</button>
+        <button id="globalRightAll">➡️ Right All</button>
+    </div>
+</div>
+
+<!-- ROBOTS GRID: 10 cards -->
+<div class="robot-grid" id="robotsGrid"></div>
+
+<footer>
+    💡 Tip: Click "Select" on any robot card to target it. Then use its D-pad & speed slider.<br>
+    🚀 Global buttons affect all 10 robots instantly.<br>
+    🎵 Click "SYNC DANCE!" to make all robots perform a synchronized dance routine!
+</footer>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="/static/js/logic.js"></script>
+</body>
+</html>
