@@ -1,0 +1,23 @@
+# configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: robot-config
+data:
+  robot_pins.yaml: |
+    robots:
+      - id: 0
+        name: "Robot 1"
+        pins:
+          in1: 13
+          in2: 21
+          in3: 17
+          in4: 27
+      # Add more robots when ready
+      # - id: 1
+      #   name: "Robot 2"
+      #   pins:
+      #     in1: 14
+      #     in2: 15
+      #     in3: 18
+      #     in4: 23

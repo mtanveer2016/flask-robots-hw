@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: robot-control
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: robot-control
+  template:
+    metadata:
+      labels:
+        app: robot-control
+    spec:
+      nodeSelector:
+        robot-gpio: "true"
+      containers:
+      - name: robot-control
+        image: robot-control:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 5005
+        env:
+        - name: ROBOT_MODE
+          value: "REAL"  # CHANGE THIS to REAL
+        - name: USE_GPIO
+          value: "true"  # CHANGE THIS to true
+        - name: ROBOT_COUNT
+          value: "1"
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: gpio
+          mountPath: /sys/class/gpio
+      volumes:
+      - name: gpio
+        hostPath:
+          path: /sys/class/gpio
+          type: Directory
