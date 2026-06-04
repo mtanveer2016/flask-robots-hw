@@ -18,7 +18,7 @@ case "$1" in
         # Start K8s app
         kubectl scale deployment flask-robot -n staging --replicas=1
         echo -e "${GREEN}✅ K8s app active on port 32391${NC}"
-        echo "   Access at: http://10.243.53.235:32391"
+        echo "   Access at: http://10.202.105.234:32391"
         ;;
     local)
         echo -e "${YELLOW}Switching to Local app...${NC}"

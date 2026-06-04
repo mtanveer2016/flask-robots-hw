@@ -51,5 +51,5 @@ echo "To restart K8s app later, run:"
 echo "  kubectl scale deployment flask-robot -n staging --replicas=1"
 echo ""
 
-cd /home/mtrobotcar/flask_robots_hw
-sudo python3 app_safe.py
+#cd /home/mtrobotcar/flask_robots_hw
+#sudo python3 app.py

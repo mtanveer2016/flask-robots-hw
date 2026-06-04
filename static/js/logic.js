@@ -2,7 +2,7 @@
 // API CONFIGURATION
 // ============================================
 // Change this to your Raspberry Pi's IP address
-const ROBOT_API_BASE = 'http://10.243.53.235:5005';
+const ROBOT_API_BASE = 'http://10.202.105.234:5005';
 
 // Number of robots in your cluster
 const ROBOT_COUNT = 10;
