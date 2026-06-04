@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Multi-Robot Control - All Robots</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a2e;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        .robot-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px;
+        }
+        .robot-card {
+            background: #16213e;
+            border-radius: 15px;
+            padding: 20px;
+            border: 2px solid #0f3460;
+        }
+        .robot-card.online {
+            border-color: #00ff00;
+        }
+        .robot-card.offline {
+            border-color: #ff0000;
+        }
+        .dpad {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 20px 0;
+        }
+        .dpad-row {
+            display: flex;
+            justify-content: center;
+        }
+        .dpad-btn {
+            width: 60px;
+            height: 60px;
+            margin: 5px;
+            font-size: 24px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            background: #0f3460;
+            color: white;
+        }
+        .dpad-btn:active {
+            background: #e94560;
+        }
+        .stop-btn {
+            background: #e94560;
+            padding: 10px 20px;
+            font-size: 18px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            color: white;
+        }
+        .global-controls {
+            margin: 20px;
+            padding: 20px;
+            background: #16213e;
+            border-radius: 15px;
+        }
+        .global-btn {
+            padding: 15px 30px;
+            margin: 10px;
+            font-size: 18px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        .dance-btn {
+            background: #9b59b6;
+            color: white;
+        }
+        .emergency-btn {
+            background: #ff0000;
+            color: white;
+        }
+        .status-led {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        .online-led { background: #00ff00; box-shadow: 0 0 5px #00ff00; }
+        .offline-led { background: #ff0000; box-shadow: 0 0 5px #ff0000; }
+    </style>
+</head>
+<body>
+    <h1>🤖 MULTI-ROBOT CONTROL CENTER</h1>
+    
+    <div class="global-controls">
+        <h2>🌐 Global Controls</h2>
+        <button class="global-btn dance-btn" onclick="dance()">💃 SYNC DANCE 🕺</button>
+        <button class="global-btn" onclick="controlAll('forward')">⬆️ ALL FORWARD</button>
+        <button class="global-btn" onclick="controlAll('backward')">⬇️ ALL BACKWARD</button>
+        <button class="global-btn" onclick="controlAll('left')">⬅️ ALL LEFT</button>
+        <button class="global-btn" onclick="controlAll('right')">➡️ ALL RIGHT</button>
+        <button class="global-btn" onclick="controlAll('stop')">🛑 ALL STOP</button>
+        <button class="global-btn emergency-btn" onclick="emergencyStop()">🚨 EMERGENCY STOP 🚨</button>
+    </div>
+    
+    <div id="robotGrid" class="robot-grid"></div>
+    
+    <script>
+        const API_BASE = 'http://10.243.53.235:5005';
+        
+        function controlRobot(robotId, direction) {
+            fetch(`${API_BASE}/move/${robotId}/${direction}`)
+                .then(response => response.json())
+                .then(data => console.log(`Robot ${robotId}: ${direction}`, data));
+        }
+        
+        function controlAll(direction) {
+            fetch(`${API_BASE}/move/all/${direction}`)
+                .then(response => response.json())
+                .then(data => console.log('All robots:', direction, data));
+        }
+        
+        function dance() {
+            fetch(`${API_BASE}/dance`)
+                .then(response => response.json())
+                .then(data => console.log('Dance started', data));
+        }
+        
+        function emergencyStop() {
+            fetch(`${API_BASE}/emergency/stop`)
+                .then(response => response.json())
+                .then(data => console.log('Emergency stop', data));
+        }
+        
+        function loadRobotStatus() {
+            fetch(`${API_BASE}/status`)
+                .then(response => response.json())
+                .then(data => {
+                    const grid = document.getElementById('robotGrid');
+                    grid.innerHTML = '';
+                    for (const [id, robot] of Object.entries(data.robots)) {
+                        const card = document.createElement('div');
+                        card.className = `robot-card ${robot.online ? 'online' : 'offline'}`;
+                        card.innerHTML = `
+                            <h3>🤖 ${robot.name}</h3>
+                            <p>IP: ${robot.ip}</p>
+                            <p><span class="status-led ${robot.online ? 'online-led' : 'offline-led'}"></span> ${robot.online ? 'ONLINE' : 'OFFLINE'}</p>
+                            <div class="dpad">
+                                <div class="dpad-row">
+                                    <button class="dpad-btn" onclick="controlRobot(${id}, 'forward')">▲</button>
+                                </div>
+                                <div class="dpad-row">
+                                    <button class="dpad-btn" onclick="controlRobot(${id}, 'left')">◀</button>
+                                    <button class="dpad-btn" onclick="controlRobot(${id}, 'stop')">●</button>
+                                    <button class="dpad-btn" onclick="controlRobot(${id}, 'right')">▶</button>
+                                </div>
+                                <div class="dpad-row">
+                                    <button class="dpad-btn" onclick="controlRobot(${id}, 'backward')">▼</button>
+                                </div>
+                            </div>
+                            <button class="stop-btn" onclick="controlRobot(${id}, 'stop')">⏹️ STOP</button>
+                        `;
+                        grid.appendChild(card);
+                    }
+                });
+        }
+        
+        setInterval(loadRobotStatus, 5000);
+        loadRobotStatus();
+    </script>
+</body>
+</html>
